@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: OpenNTF XLogback
 Bundle-SymbolicName: org.openntf.base.logback;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.openntf.base.logback.plugin.XLogbackPlugin
+Bundle-Activator: org.openntf.base.logback.plugin.BasePlugin
 Bundle-Vendor: OpenNTF
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-BuddyPolicy: registered

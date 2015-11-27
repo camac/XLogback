@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 
-public class XLogbackPlugin extends Plugin implements BundleActivator {
+public class BasePlugin extends Plugin implements BundleActivator {
 
 	private static BundleContext context;
 
@@ -41,7 +41,7 @@ public class XLogbackPlugin extends Plugin implements BundleActivator {
 		context = paramContext;
 	}
 	
-	public XLogbackPlugin() {
+	public BasePlugin() {
 	}
 	
 	public void start(BundleContext bundleContext) throws Exception {
