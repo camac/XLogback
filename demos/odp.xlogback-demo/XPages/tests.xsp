@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
+	<xp:button
+		id="button1" value="Error Log from a Static Java Method">
+	<xp:eventHandler
+		event="onclick"
+		submit="true"
+		refreshMode="norefresh">
+		<xp:this.action><![CDATA[#{javascript:test.JavaTest01.testError();}]]></xp:this.action>
+	</xp:eventHandler></xp:button>
+	<xp:br></xp:br>
+	<xp:br></xp:br><xp:button id="button2" value="Warning Log from a Static Java Method with a Marker">
+	<xp:eventHandler
+		event="onclick"
+		submit="true"
+		refreshMode="norefresh">
+		<xp:this.action><![CDATA[#{javascript:test.JavaTest01.testWarningWithMarker();}]]></xp:this.action>
+	</xp:eventHandler></xp:button></xp:view>
