@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OpenNTF XLogback XSP Plugin
+Bundle-SymbolicName: org.openntf.base.logback.xsp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.openntf.base.logback.xsp.plugin.XspPlugin
+Bundle-Vendor: OpenNTF
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.eclipse.core.runtime;version="3.4.0",
+ org.osgi.framework;version="1.3.0"
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.openntf.base.logback;bundle-version="1.0.0";visibility:=reexport,
+ com.ibm.xsp.extsn
+Export-Package: org.openntf.base.logback.xsp
