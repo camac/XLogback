@@ -1,5 +1,5 @@
 **XLogback Project**  
-*Version 0.90 Alpha*
+*Version 0.90 Preview*
 
 OPENNTF
 
@@ -74,7 +74,41 @@ Here are a comparison between two projects:
 
 # How to start?
 
-TODO
+## For XPages Developers
+
+- XLogback ships with two update sites for Domino Server and Designer. Designer client includes source bundles.
+- Install update sites into your Domino Server and Domino Designer.
+  - You can follow [this](http://www-10.lotus.com/ldd/ddwiki.nsf/xpDocViewer.xsp?lookupName=Domino+Designer+XPages+Extension+Library#action=openDocument&res_title=Installing_the_OpenNTF_update_site_in_Domino_Designer_ddxl853&content=pdcontent) and [this](http://www-10.lotus.com/ldd/ddwiki.nsf/xpDocViewer.xsp?lookupName=Domino+Designer+XPages+Extension+Library#action=openDocument&res_title=Installing_the_OpenNTF_update_site_on_the_Domino_server_ddxl853&content=pdcontent) wiki pages to learn how to do it.
+- Restart your server and Designer clients.
+- Open your Notes application in Domino Designer and go to **Page Generation** section under **XSP.Properties**.
+  - If the installation is successful, you should see "**org.openntf.base.logback.xsp.plugin.library**" in XPage Libraries section.
+  - Click that.
+- Now you can use logging from any Java class. Here is an example:
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MarkerFactory;
+
+public class JavaTest01 {
+
+	private static Logger logger = LoggerFactory.getLogger(JavaTest01.class);
+
+	public static void testError() {
+		logger.error("Some Error from a static method inside a Java class inside an NSF!", new Throwable("Test detail message for error"));
+	}
+
+	public static void testWarningWithMarker() {
+		logger.warn(MarkerFactory.getMarker("TestMarker"), "Warning message from a static method inside a Java class inside an NSF with a Marker");
+	}
+}
+```
+
+## For Plugin Developers
+
+You might either import `org.openntf.base.logback` project into your workplace or add the plugin into your Target platform.
+
+Soon we will mavenize the project for easier installation into the Eclipse IDE.
 
 # Configuration Options
 
@@ -255,3 +289,10 @@ XLogback autoconfiguration starts with the plugin start. Since we don't have any
 Submit your feature requests and bug reports into [XLogback Jira Project Page](https://jira.openntf.org/projects/XLB).
 
 Let me know if you want to contribute in any way :)
+
+# Known Issues
+
+- In Designer, autocomplete is not working properly for SLF4J classes.
+  - I don't know why ;-)
+- When logging from XPages applications, OpenLog does not provide database and agent values yet.
+  - This is easy but there are several different options. So I have to pick up the most effective method.
