@@ -31,7 +31,7 @@ import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
 import lotus.domino.Session;
 
-import com.ibm.dots.utils.StringUtils;
+import org.openntf.base.logback.utils.StringUtils;
 
 /**
  * The original implementation of OpenLogEntry is based on;
