@@ -252,4 +252,6 @@ XLogback autoconfiguration starts with the plugin start. Since we don't have any
 
 # How to Contribute
 
-Let me know :)
+Submit your feature requests and bug reports into [XLogback Jira Project Page](https://jira.openntf.org/projects/XLB).
+
+Let me know if you want to contribute in any way :)
