@@ -122,6 +122,10 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 		item.setFromAgent(getAgent());
 		item.setFromApp(getApp());
 		
+		if(event.getMarker()!=null) {
+			item.setMarker(event.getMarker().getName());
+		}
+		
 		queue.add(item);
 		
 		sendToLog();
