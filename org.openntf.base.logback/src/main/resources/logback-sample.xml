@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration debug="false">
+	<appender name="console" class="org.openntf.base.logback.appender.DominoConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%-5level %msg%n%ex{1}</pattern>
+		</layout>
+	</appender>
+
+	<appender name="openlog" class="org.openntf.base.logback.appender.OpenLogAppender">
+		<targetDbServer></targetDbServer>
+		<targetDbPath>OpenLog.nsf</targetDbPath>
+
+		<suppressEventStack>true</suppressEventStack>
+		<logExpireDays>0</logExpireDays>
+		<debugLevel>2</debugLevel>
+	</appender>
+
+	<define name="LOGPATH" class="org.openntf.base.logback.properties.LogPathProperty"></define>
+	<define name="PLATFORM" class="org.openntf.base.logback.properties.PlatformProperty"></define>
+
+	<appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOGPATH}${PLATFORM}.html</file>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>${LOGPATH}${PLATFORM}.%i.html</fileNamePattern>
+			<minIndex>1</minIndex>
+			<maxIndex>20</maxIndex>
+		</rollingPolicy>
+
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>2MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+			<layout class="ch.qos.logback.classic.html.HTMLLayout">
+				<pattern>%date{dd/MM;HH:mm:ss}%level%msg%mdc{app}%marker%logger{26}</pattern>
+			</layout>
+		</encoder>
+	</appender>
+
+	<root level="debug">
+		<appender-ref ref="console" />
+		<appender-ref ref="openlog" />
+		<appender-ref ref="rollingFile" />
+	</root>
+</configuration>

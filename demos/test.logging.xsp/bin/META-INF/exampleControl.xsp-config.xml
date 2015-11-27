@@ -1,0 +1,17 @@
+<faces-config>
+    <faces-config-extension>
+        <namespace-uri>http://example.com/xsp/control</namespace-uri>
+        <default-prefix>eg</default-prefix>
+    </faces-config-extension>
+   
+<!--     <component> -->
+<!--     	<description>An example control used in explaining how to write your own controls.</description> -->
+<!--     	<display-name>Example Control</display-name> -->
+<!--     	<component-type>com.example.examplecontrol</component-type> -->
+<!--         <component-class>com.example.component.ExampleControl</component-class> -->
+<!--         <component-extension> -->
+<!--             <tag-name>exampleControl</tag-name> -->
+<!--         </component-extension> -->
+<!--     </component> -->
+    
+</faces-config>
