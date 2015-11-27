@@ -20,10 +20,6 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.openntf.base.logback.core.LoggingException;
-import org.openntf.base.logback.utils.LogUtils;
-import org.openntf.base.logback.utils.Utils;
-
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
@@ -31,7 +27,10 @@ import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
 import lotus.domino.Session;
 
-import com.ibm.dots.utils.StringUtils;
+import org.openntf.base.logback.core.LoggingException;
+import org.openntf.base.logback.utils.LogUtils;
+import org.openntf.base.logback.utils.StringUtils;
+import org.openntf.base.logback.utils.Utils;
 
 /**
  * The original implementation of OpenLogEntry is based on;
@@ -72,6 +71,8 @@ public class OpenLogEntry implements Serializable {
 
 	private String fromAgent = null;
 	private String fromApp = null;
+
+	private String marker = "";
 	
 	private String loggedDbUrl = "";
 	private String loggedDbPath = "";
@@ -143,6 +144,14 @@ public class OpenLogEntry implements Serializable {
 
 	public void setFromAgent(String fromAgent) {
 		this.fromAgent = fromAgent;
+	}
+	
+	public String getMarker() {
+		return this.marker;
+	}
+
+	public void setMarker(String marker) {
+		this.marker = marker;
 	}
 
 	public void setLoggedDoc(Document loggedDoc) {
@@ -255,7 +264,7 @@ public class OpenLogEntry implements Serializable {
 
 			logDoc.replaceItemValue("LogSeverity", getEventSeverity());
 			logDoc.replaceItemValue("LogFromAgent", getFromAgent());
-
+			logDoc.replaceItemValue("LogMarker", getMarker());
 			
 			if(org.openntf.base.logback.utils.StringUtils.isNotEmpty(getLoggedDbUrl())) {
 				logDoc.replaceItemValue("LogFromDatabase", getLoggedDbPath());
