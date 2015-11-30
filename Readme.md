@@ -1,5 +1,5 @@
 **XLogback Project**  
-*Version 0.90 Preview*
+*Version 0.91 Preview*
 
 OPENNTF
 
@@ -292,7 +292,7 @@ Let me know if you want to contribute in any way :)
 
 # Known Issues
 
-- In Designer, autocomplete is not working properly for SLF4J classes.
-  - I don't know why ;-)
+- ~~In Designer, autocomplete is not working properly for SLF4J classes~~.
+  - Resolved as of 0.91
 - When logging from XPages applications, OpenLog does not provide database and agent values yet.
   - This is easy but there are several different options. So I have to pick up the most effective method.
