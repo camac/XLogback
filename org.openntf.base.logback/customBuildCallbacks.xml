@@ -1,0 +1,13 @@
+<project name="ExplodeSource">
+	
+	<target name="post.gather.sources" >
+		<mkdir dir="${target.folder}/lb-classic-src"/>
+		<mkdir dir="${target.folder}/lb-core-src"/>
+		<mkdir dir="${target.folder}/slf4j-src"/>
+		<unzip src="${target.folder}/ext/src/logback-classic-1.1.3-sources.jar" dest="${target.folder}/lb-classic-src" overwrite="false"/>
+		<unzip src="${target.folder}/ext/src/logback-core-1.1.3-sources.jar" dest="${target.folder}/lb-core-src" overwrite="false"/>
+		<unzip src="${target.folder}/ext/src/slf4j-api-1.7.12-sources.jar" dest="${target.folder}/slf4j-src" overwrite="false"/>
+		<delete dir="${target.folder}/ext" />
+	</target>
+	
+</project>
