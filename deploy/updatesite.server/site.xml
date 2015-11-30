@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.openntf.base.logback.xsp.feature_1.0.0.qualifier.jar" id="org.openntf.base.logback.xsp.feature" version="1.0.0.qualifier">
+   <feature url="features/org.openntf.base.logback.xsp.feature_0.9.1.201511301153.jar" id="org.openntf.base.logback.xsp.feature" version="0.9.1.201511301153">
       <category name="OpenNTF.XLogback"/>
    </feature>
    <category-def name="OpenNTF.XLogback" label="OpenNTF.XLogback"/>

@@ -2,7 +2,7 @@
 <feature
       id="org.openntf.base.logback.xsp.feature.sdk"
       label="OpenNTF XLogback XSP Plugin SDK"
-      version="1.0.0.qualifier">
+      version="0.9.1.qualifier">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -19,10 +19,11 @@
    <includes
          id="org.openntf.base.logback.xsp.feature"
          version="0.0.0"/>
-         
+
    <includes
          id="org.openntf.base.logback.xsp.feature.source"
          version="0.0.0"
          name="OpenNTF XLogback XSP Feature Source"
          optional="true"/>
+
 </feature>
