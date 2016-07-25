@@ -1,4 +1,5 @@
 
 *.class
 bin/
+org.openntf.base.logback.updatesite/
 rebel.xml
