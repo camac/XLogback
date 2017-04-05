@@ -13,7 +13,8 @@ Import-Package: lotus.domino,
 Bundle-ClassPath: .,
  ext/logback-classic-1.1.3.jar,
  ext/logback-core-1.1.3.jar,
- ext/slf4j-api-1.7.12.jar
+ ext/slf4j-api-1.7.12.jar,
+ ext/janino-2.5.10.jar
 Export-Package: org.slf4j
 Require-Bundle: com.ibm.dots;resolution:=optional,
  com.ibm.commons
