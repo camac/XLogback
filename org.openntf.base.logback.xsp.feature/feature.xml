@@ -2,7 +2,7 @@
 <feature
       id="org.openntf.base.logback.xsp.feature"
       label="OpenNTF XLogback XSP Feature"
-      version="0.9.1.qualifier"
+      version="1.0.0.qualifier"
       provider-name="OpenNTF">
 
    <description url="http://www.example.com/description">
