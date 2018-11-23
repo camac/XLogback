@@ -16,47 +16,50 @@
  */
 package org.openntf.base.logback.openlog;
 
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import lotus.domino.Database;
-import lotus.domino.Document;
-import lotus.domino.NotesException;
-import lotus.domino.Session;
-
 import org.openntf.base.logback.core.LoggingException;
 import org.openntf.base.logback.utils.DominoRunner;
+import org.openntf.base.logback.utils.DominoRunner.SessionRoutine;
 import org.openntf.base.logback.utils.StringUtils;
 import org.openntf.base.logback.utils.Utils;
-import org.openntf.base.logback.utils.DominoRunner.SessionRoutine;
+import org.openntf.base.logback.utils.XPagesDetector;
 import org.slf4j.MDC;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.AppenderBase;
+import lotus.domino.Database;
+import lotus.domino.Document;
+import lotus.domino.NotesException;
+import lotus.domino.Session;
 
 public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 
 	private static final String DEFAULT_LOGDBPATH = "OpenLog.nsf"; 
 	private static final int MAX_COUNT_QUEUE = 10;
-	
+
 	private String defaultApp;
 	private String defaultAgent;
-	
+
 	private String targetDbServer = "";
 	private String targetDbPath = "";
 
 	private boolean suppressEventStack = false;
 	private int logExpireDays = 0;
 	private int debugLevel = 2;
-	
+
 	private List<OpenLogEntry> queue = new ArrayList<OpenLogEntry>();
-	
+
 	@Override
 	public void start() {
 
-		if(StringUtils.isEmpty(targetDbPath)) {
+		if (StringUtils.isEmpty(targetDbPath)) {
 			addError("OpenLog database has not been set. OpenLog logger will fail.");
 			return;
 		}
@@ -65,6 +68,34 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 		addInfo("OpenLog logging started.");
 	}
 
+	public static Database findHorizonCurrentDatabase() {
+		return AccessController.doPrivileged(new PrivilegedAction<Database>() {
+			@Override
+			public Database run() {
+				try {
+					// This classloader is not available in Wink.
+					// Wink servlets replaces classloaders during runtime.
+					ClassLoader cl = Thread.currentThread().getContextClassLoader();
+					Class<?> clazz = cl.loadClass("com.jord.domino.runtime.DominoSession");
+					Method m1 = clazz.getDeclaredMethod("getCurrentDatabase", new Class[0]);
+
+					return (Database) m1.invoke(null, new Object[0]);
+
+				} catch (ClassNotFoundException e) {
+					//logger.trace("DominoSession class not found");
+					// We couldn't find the class.
+				} catch (NoClassDefFoundError e) {
+					//logger.trace("DominoSession throwed an exception");
+					// We couldn't access the class.
+					return null;
+				} catch (Throwable t) {
+					//logger.trace("Unhandled error looking for the DominoSession current Database", t);
+				}
+				return null;
+			}
+		});
+	}
+	
 	@Override
 	protected void append(ILoggingEvent event) {
 		if (!isStarted()) {
@@ -72,27 +103,41 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 		}
 
 		// TODO Needs Guarding against repetitive reentries.
-		
+
 		Object[] args = event.getArgumentArray();
 		Document sourceDoc = null;
 		Database sourceDb = null;
-		
+
+		//TODO Import XPagesDetector ?? 
+		if (XPagesDetector.isXPagesContext()) {
+			try {
+				sourceDb = XPagesDetector.getXspContextSession().getCurrentDatabase();
+			} catch (NotesException e) {
+				//e.printStackTrace();
+			}
+		}
+
+		// TODO Get our Current Database
+		if (sourceDb == null) {
+			sourceDb = findHorizonCurrentDatabase();
+		}
+
 		try {
-			if(args!=null && args.length>0) {
-				for(int i=0; i<args.length; i++) {
-					if(args[i] instanceof Document) {
-						sourceDoc = (Document)args[i];
-						args[i] = "[DocId:"+sourceDoc.getNoteID()+"]";
-					} else if(args[i] instanceof Database) {
-						sourceDb = (Database)args[i];
-						args[i] = "[DB:"+sourceDb.getFilePath()+"]";
+			if (args != null && args.length > 0) {
+				for (int i = 0; i < args.length; i++) {
+					if (args[i] instanceof Document) {
+						sourceDoc = (Document) args[i];
+						args[i] = "[DocId:" + sourceDoc.getNoteID() + "]";
+					} else if (args[i] instanceof Database) {
+						sourceDb = (Database) args[i];
+						args[i] = "[DB:" + sourceDb.getFilePath() + "]";
 					}
 				}
 			}
 		} catch (NotesException e) {
 			addWarn("Unexpected error recovering SourceDoc", e);
 		}
-		
+
 		addToOpenLog(event, sourceDoc, sourceDb);
 	}
 
@@ -102,32 +147,32 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 		String severity = event.getLevel().levelStr;
 
 		ThrowableProxy tp = (ThrowableProxy) event.getThrowableProxy();
-		
+
 		OpenLogEntry item = new OpenLogEntry(this);
 
 		if (null != tp) {
 			item.setBaseException(tp.getThrowable());
 
-			if(StringUtils.isEmpty(message)) {
+			if (StringUtils.isEmpty(message)) {
 				message = (null != tp.getMessage()) ? tp.getMessage() : tp.getClass().getCanonicalName();
 			}
 		}
 
 		item.setMessage(message);
-		
+
 		item.setLoggedDb(sourceDb);
 		item.setLoggedDoc(sourceDoc);
 		item.setEvent(isEvent);
 		item.setEventSeverity(severity);
 		item.setFromAgent(getAgent());
 		item.setFromApp(getApp());
-		
-		if(event.getMarker()!=null) {
+
+		if (event.getMarker() != null) {
 			item.setMarker(event.getMarker().getName());
 		}
-		
+
 		queue.add(item);
-		
+
 		sendToLog();
 		checkQueue();
 	}
@@ -156,21 +201,21 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 	}
 
 	protected void sendToLog(Session session) {
-		
+
 		Database logDb = null;
 		try {
 			logDb = session.getDatabase(getTargetDbServer(), getTargetDbPath(), false);
 
-			if(logDb!=null) {
+			if (logDb != null) {
 				for (Iterator<OpenLogEntry> iterator = queue.iterator(); iterator.hasNext();) {
 					OpenLogEntry item = (OpenLogEntry) iterator.next();
-					
-					if(item.save(logDb)) {
+
+					if (item.save(logDb)) {
 						iterator.remove();
 					}
 				}
 			}
-		
+
 		} catch (NotesException e) {
 			addError("Notes Error processing OpenLogEntry", e);
 		} catch (LoggingException e) {
@@ -178,44 +223,48 @@ public class OpenLogAppender extends AppenderBase<ILoggingEvent> {
 		} finally {
 			Utils.recycleObject(logDb);
 		}
-		
+
 	}
 
 	protected void checkQueue() {
-		if(queue.size()>MAX_COUNT_QUEUE) {
+		if (queue.size() > MAX_COUNT_QUEUE) {
 			addError("OpenLog has too much log entries in the queue. It will stop now.");
 			stop();
 		}
 	}
-	
+
 	protected String getAgent() {
 		String agentSet = MDC.get("agent");
 
-		if(StringUtils.isNotEmpty(agentSet)) {
+		if (StringUtils.isNotEmpty(agentSet)) {
 			return agentSet;
 		}
 
-		if(StringUtils.isNotEmpty(getDefaultAgent())) {
+		// if (StringUtils.isNotEmpty(DominoSession.getBgTaskName())) {
+		// return DominoSession.getBgTaskName();
+		// }
+
+		if (StringUtils.isNotEmpty(getDefaultAgent())) {
 			return getDefaultAgent();
 		}
-		
+
 		return null;
 	}
 
 	protected String getApp() {
 		String appSet = MDC.get("app");
-		
-		if(StringUtils.isNotEmpty(appSet)) {
+
+		if (StringUtils.isNotEmpty(appSet)) {
 			return appSet;
 		}
-		
-		if(StringUtils.isNotEmpty(getDefaultApp())) {
+
+		if (StringUtils.isNotEmpty(getDefaultApp())) {
 			return getDefaultApp();
 		}
-		
+
 		return null;
 	}
-	
+
 	public String getDefaultApp() {
 		return defaultApp;
 	}

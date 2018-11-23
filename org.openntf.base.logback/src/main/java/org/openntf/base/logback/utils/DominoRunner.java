@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original implementation taken from XSnippets site. 
+ * Original implementation taken from XSnippets site.
  * 
  * Author: Serdar Basegmez
  * Link: http://openntf.org/s/dominorunner-provides-a-temporary-notes-session-for-your-java-code...
@@ -41,67 +41,82 @@ import org.slf4j.LoggerFactory;
 public class DominoRunner {
 
 	private static Logger logger = LoggerFactory.getLogger(DominoRunner.class);
-		
+
 	public interface SessionRoutine<T> {
 		public T doRun(Session session);
 		public T fallback();
 		public T onException(Throwable t);
 	}
-	
+
 	public static <T> T runWithSession(boolean trusted, SessionRoutine<T> routine) {
 		// We need a session. So first, we'll try to get the session from the NotesContext.
 		// If the caller eventually binded to an XPages session, we'll be able to grab a session.
 		// The only problem is that; session coming from NotesContext will be the SignerSession. 
 		// Hope there is only one almighty developer :)
 
-		Session session=null;
-		
+		Session session = null;
+
 		session = findNotesContextSession(trusted);
-		
-		if(null != session) {
+
+		if (null != session) {
 			logger.trace("Got a NotesContext session!");
 			try {
 				return routine.doRun(session);
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				return routine.onException(t);
 			}
 		}
 
 		logger.trace("Failed to have a NotesContext session...");
-		
+
 		// So we couldn't grab the session... It means that we are out of XPages. 
 		// If this is a servlet, we still have a chance for getting a User Session.
-		
-		if(!trusted) {
+
+		if (!trusted) {
 			logger.trace("User session requested. We'll try ContextInfo.");
-			
+
 			session = findContextInfoSession();
-			
-			if(null != session) {
+
+			if (null != session) {
 				logger.trace("Got a NotesContext session!");
 				try {
 					return routine.doRun(session);
-				} catch(Throwable t) {
+				} catch (Throwable t) {
 					return routine.onException(t);
 				}
 			}
 
 			logger.trace("Failed to have a ContextInfo session...");
 		}
+
+		logger.trace("Trying to find Horizon Session");
+
+		session = findHorizonInfoSession();
+
+		if (null != session) {
+			logger.trace("We Found our Horizon Session");
+			try {
+				return routine.doRun(session);
+			} catch (Throwable t) {
+				return routine.onException(t);
+			}
+		}
 		
+		logger.trace("Failed to find Horizon Session");
+
 		// We might be on an OSGi-level thread, DOTS or a servlet.
 		// Either way, we hope we are allowed to have NotesThread session.
-		
+
 		try {
 			logger.trace("Trying NotesThread option.");
 			NotesThread.sinitThread();
 			session = NotesFactory.createTrustedSession();
-			
-			if(null != session) {
+
+			if (null != session) {
 				logger.trace("NotesThread worked. We have a session now...");
 				try {
 					return routine.doRun(session);
-				} catch(Throwable t) {
+				} catch (Throwable t) {
 					return routine.onException(t);
 				}
 			}
@@ -111,7 +126,7 @@ public class DominoRunner {
 			logger.trace("Unable to receive a session from NotesThread: {}", e.text);
 		} finally {
 			NotesThread.stermThread();
-			Utils.recycleObject(session); 
+			Utils.recycleObject(session);
 		}
 
 		logger.trace("No other option for now. We can't have a Session, we can't load configuration!");
@@ -124,21 +139,21 @@ public class DominoRunner {
 			@Override
 			public Session run() {
 				try {
-					// This classloader is not available in Wink. 
-					// Wink servlets replaces classloaders during runtime. 
+					// This classloader is not available in Wink.
+					// Wink servlets replaces classloaders during runtime.
 					ClassLoader cl = Thread.currentThread().getContextClassLoader();
 					Class<?> clazz = cl.loadClass("com.ibm.domino.xsp.module.nsf.NotesContext");
 					Method m1 = clazz.getDeclaredMethod("getCurrentUnchecked", new Class[0]);
 					Method m2;
-					if(signer) {
+					if (signer) {
 						m2 = clazz.getDeclaredMethod("getSessionAsSignerFullAdmin", new Class[0]);
 					} else {
 						m2 = clazz.getDeclaredMethod("getCurrentSession", new Class[0]);
 					}
-					
+
 					Object nc = m1.invoke(null, new Object[0]);
-					
-					if(nc==null) {
+
+					if (nc == null) {
 						logger.trace("NotesContext is null");
 						// NotesContext is unavailable. We are out of XSP context.
 						return null;
@@ -160,18 +175,18 @@ public class DominoRunner {
 			}
 		});
 	}
-	
+
 	public static Session findContextInfoSession() {
 		return AccessController.doPrivileged(new PrivilegedAction<Session>() {
 			@Override
 			public Session run() {
 				try {
-					// This classloader is not available in Wink. 
-					// Wink servlets replaces classloaders during runtime. 
+					// This classloader is not available in Wink.
+					// Wink servlets replaces classloaders during runtime.
 					ClassLoader cl = Thread.currentThread().getContextClassLoader();
 					Class<?> clazz = cl.loadClass("com.ibm.domino.osgi.core.context.ContextInfo");
 					Method m1 = clazz.getDeclaredMethod("getUserSession", new Class[0]);
-					
+
 					return (Session) m1.invoke(null, new Object[0]);
 
 				} catch (ClassNotFoundException e) {
@@ -188,5 +203,33 @@ public class DominoRunner {
 			}
 		});
 	}
-	
+
+	public static Session findHorizonInfoSession() {
+		return AccessController.doPrivileged(new PrivilegedAction<Session>() {
+			@Override
+			public Session run() {
+				try {
+					// This classloader is not available in Wink.
+					// Wink servlets replaces classloaders during runtime.
+					ClassLoader cl = Thread.currentThread().getContextClassLoader();
+					Class<?> clazz = cl.loadClass("com.jord.domino.runtime.DominoSession");
+					Method m1 = clazz.getDeclaredMethod("getSession", new Class[0]);
+
+					return (Session) m1.invoke(null, new Object[0]);
+
+				} catch (ClassNotFoundException e) {
+					logger.trace("DominoSession class not found");
+					// We couldn't find the class.
+				} catch (NoClassDefFoundError e) {
+					logger.trace("DominoSession throwed an exception");
+					// We couldn't access the class.
+					return null;
+				} catch (Throwable t) {
+					logger.trace("Unhandled error looking for the DominoSession session", t);
+				}
+				return null;
+			}
+		});
+	}
+
 }
