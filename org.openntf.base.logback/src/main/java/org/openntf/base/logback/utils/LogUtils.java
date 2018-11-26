@@ -18,14 +18,24 @@ package org.openntf.base.logback.utils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 public class LogUtils {
 
 	public static String getStackTrace(Throwable ee) {
-		if(ee==null) return "";
-		
+		if (ee == null)
+			return "";
+
 		try {
 			StringWriter sw = new StringWriter();
 			ee.printStackTrace(new PrintWriter(sw));
@@ -52,16 +62,35 @@ public class LogUtils {
 					st.nextToken();
 				}
 			}
-	
+
 		} catch (Exception e) {
 		}
-	
+
 		return v;
 	}
 
 	public static String getPlatformName() {
 		String platform = System.getProperty("dots.mq.name");
-		return StringUtils.defaultIfEmpty(platform, "XSP");		
+		return StringUtils.defaultIfEmpty(platform, "XSP");
 	}
-	
+
+	public static void reloadDefaultConfiguration() {
+
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+		ContextInitializer ci = new ContextInitializer(loggerContext);
+		URL url = ci.findURLOfDefaultConfigurationFile(true);
+
+		try {
+			JoranConfigurator configurator = new JoranConfigurator();
+			configurator.setContext(loggerContext);
+			loggerContext.reset();
+			configurator.doConfigure(url);
+		} catch (JoranException je) {
+			// StatusPrinter will handle this
+		}
+		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
+
+	}
+
 }

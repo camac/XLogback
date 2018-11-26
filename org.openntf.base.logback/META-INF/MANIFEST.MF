@@ -20,6 +20,7 @@ Export-Package: ch.qos.logback.classic,
  ch.qos.logback.core,
  ch.qos.logback.core.filter,
  org.openntf.base.logback.console,
+ org.openntf.base.logback.utils,
  org.slf4j
 Require-Bundle: com.ibm.dots;resolution:=optional,
  com.ibm.commons
